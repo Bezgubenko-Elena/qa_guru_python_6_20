@@ -1,11 +1,15 @@
 import requests
-import jsonschema
 from jsonschema.validators import validate
+import json
+import os
+
+path_schema = os.path.abspath(os.path.join(os.path.dirname(__file__), 'resources'))
+base_url = "https://reqres.in"
 
 
 def test_get_single_user():
     response = requests.get(
-        url="https://reqres.in/api/users/2"
+        url=f"{base_url}/api/users/2"
     )
 
     assert response.status_code == 200
@@ -17,6 +21,23 @@ def test_get_single_user():
     assert len(response.json()["support"]) == 2
 
 
+def test_single_user_schema():
+    with open(os.path.join(path_schema, "schema_single_user.json")) as file:
+        schema = json.loads(file.read())
+        response = requests.get(url=f"{base_url}/api/users/2")
+
+        validate(instance=response.json(), schema=schema)
+
+
+def test_get_single_user_not_found():
+    response = requests.get(
+        url=f"{base_url}/api/users/23"
+    )
+
+    assert response.status_code == 404
+    assert not len(response.json())
+
+
 def test_create_user():
     payload = {
         "name": "morpheus",
@@ -24,7 +45,7 @@ def test_create_user():
     }
 
     response = requests.post(
-        url="https://reqres.in/api/users",
+        url=f"{base_url}/api/users",
         data=payload
     )
 
@@ -40,7 +61,7 @@ def test_update_user_put():
     }
 
     response = requests.put(
-        url="https://reqres.in/api/users/2",
+        url=f"{base_url}/api/users/2",
         data=payload
     )
     assert response.status_code == 200
@@ -49,7 +70,7 @@ def test_update_user_put():
 
 def test_delete_user():
     response = requests.delete(
-        url="https://reqres.in/api/users/2"
+        url=f"{base_url}/api/users/2"
     )
     assert response.status_code == 204
 
@@ -61,7 +82,7 @@ def test_register_successful():
     }
 
     response = requests.post(
-        url="https://reqres.in/api/register",
+        url=f"{base_url}/api/register",
         data=payload
     )
 
@@ -75,7 +96,7 @@ def test_register_unsuccessful():
     }
 
     response = requests.post(
-        url="https://reqres.in/api/register",
+        url=f"{base_url}/api/register",
         data=payload
     )
 
@@ -90,7 +111,7 @@ def test_login_successful():
     }
 
     response = requests.post(
-        url="https://reqres.in/api/login",
+        url=f"{base_url}/api/login",
         data=payload
     )
 
@@ -104,7 +125,7 @@ def test_login_unsuccessful():
     }
 
     response = requests.post(
-        url="https://reqres.in/api/login",
+        url=f"{base_url}/api/login",
         data=payload
     )
 
